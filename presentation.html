@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application de Détection de Somnolence et Émotions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* DESIGN CORE */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            display: grid;
+            gap: 40px;
+            grid-template-columns: 1fr;
+            margin: 0;
+            min-height: 100vh;
+            padding: 40px 0;
+            place-items: center;
+        }
+
+        .slide-container {
+            align-items: flex-start;
+            background-color: #0a0a0a;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            font-family: 'Urbanist', sans-serif;
+            height: 720px;
+            justify-content: center;
+            overflow: hidden;
+            padding: 60px;
+            position: relative;
+            width: 1280px;
+            color: #f1f5f9;
+        }
+
+        /* BACKGROUND DECORATION */
+        .slide-container::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .slide-container::after {
+            content: '';
+            position: absolute;
+            bottom: 40px;
+            left: 60px;
+            right: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, #ef4444 0%, transparent 100%);
+            opacity: 0.4;
+        }
+
+        .slide-container>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* TYPOGRAPHY */
+        h1 {
+            font-size: 64px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin: 0;
+            color: #ef4444;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .slide-title {
+            font-size: 48px;
+            font-weight: 600;
+            margin-bottom: 40px;
+            color: #f1f5f9;
+            border-left: 6px solid #ef4444;
+            padding-left: 20px;
+            line-height: 1.2;
+            width: 100%;
+        }
+
+        h3 {
+            font-size: 28px;
+            color: #ef4444;
+            margin: 0 0 15px 0;
+        }
+
+        p,
+        li {
+            font-size: 20px;
+            line-height: 1.6;
+            color: #a0a0a0;
+        }
+
+        .subtitle {
+            font-size: 24px;
+            color: #a0a0a0;
+            margin-top: 20px;
+            max-width: 800px;
+        }
+
+        /* TEAM LIST */
+        .team-section {
+            margin-top: 40px;
+            display: flex;
+            gap: 40px;
+        }
+
+        .team-member {
+            background: rgba(239, 68, 68, 0.1);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            font-size: 18px;
+            color: #f1f5f9;
+        }
+
+        /* LAYOUTS */
+        .title-layout {
+            text-align: left;
+            width: 100%;
+        }
+
+        .content-area {
+            flex-grow: 1;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            width: 100%;
+            align-items: center;
+        }
+
+        /* Tech Stack Grid */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+
+        .tech-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(160, 160, 160, 0.2);
+            border-radius: 16px;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .tech-card i {
+            font-size: 40px;
+            color: #ef4444;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .tech-card span {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f1f5f9;
+        }
+
+        /* Tiled Content */
+        .tiled-content {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+
+        .tile {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 16px;
+            border-top: 4px solid #ef4444;
+            transition: transform 0.3s ease;
+            height: 350px;
+        }
+
+        .tile .icon {
+            font-size: 40px;
+            color: #ef4444;
+            margin-bottom: 20px;
+        }
+
+        .tile h4 {
+            font-size: 22px;
+            color: #f1f5f9;
+            margin-bottom: 12px;
+        }
+
+        .tile p {
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        /* Highlight Numbers */
+        .highlight-numbers-layout {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+            width: 100%;
+        }
+
+        .number-box {
+            flex: 0 0 35%;
+            text-align: center;
+        }
+
+        .number {
+            font-size: 140px;
+            font-weight: 700;
+            color: #ef4444;
+            line-height: 1;
+        }
+
+        .number-label {
+            font-size: 24px;
+            color: #f1f5f9;
+            font-weight: 500;
+        }
+
+        /* Bullet List */
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 20px;
+        }
+
+        li::before {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 0;
+            color: #ef4444;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SLIDE 1: TITRE & ÉQUIPE -->
+    <div class="slide-container" id="slide1">
+        <div class="title-layout">
+            <h1>Application de<br>Détection de Somnolence</h1>
+            <p class="subtitle">Surveillance intelligente et analyse émotionnelle pour la sécurité routière.</p>
+
+            <div style="margin-top: 40px;">
+                <p style="color: #ef4444; font-weight: 600; margin-bottom: 15px;">Équipe du Projet :</p>
+                <div class="team-section">
+                    <div class="team-member"><i class="fas fa-user"></i> Achref Tlili</div>
+                    <div class="team-member"><i class="fas fa-user"></i> Bellhasn Sehli</div>
+                    <div class="team-member"><i class="fas fa-user"></i> Maher Bouchrara</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 50px;">
+                <p>Mini-Projet IOT - 2IDL2</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: PROBLÉMATIQUE -->
+    <div class="slide-container" id="slide2">
+        <h2 class="slide-title">Contexte et Problématique</h2>
+        <div class="content-area">
+            <div class="highlight-numbers-layout">
+                <div class="number-box">
+                    <div class="number">1/3</div>
+                    <div class="number-label">Des accidents mortels</div>
+                </div>
+                <div style="flex: 1;">
+                    <h3>Les enjeux de la sécurité</h3>
+                    <ul>
+                        <li><strong>Somnolence :</strong> Baisse de vigilance, fermeture des yeux et micro-sommeils.
+                        </li>
+                        <li><strong>Émotions :</strong> Stress, colère ou distraction altérant la conduite.</li>
+                        <li><strong>Solution :</strong> Un système temps réel capable d'alerter avant l'accident.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: TECHNOLOGIES (AJOUT DE FASTAPI) -->
+    <div class="slide-container" id="slide3">
+        <h2 class="slide-title">Technologies Utilisées</h2>
+        <div class="content-area">
+            <div class="tech-grid">
+                <div class="tech-card">
+                    <i class="fas fa-microchip"></i>
+                    <span>Raspberry Pi</span>
+                    <p style="font-size: 13px; margin-top: 10px;">Traitement local et acquisition vidéo.</p>
+                </div>
+                <div class="tech-card">
+                    <i class="fas fa-bolt"></i>
+                    <span>FastAPI</span>
+                    <p style="font-size: 13px; margin-top: 10px;">Backend haute performance pour l'échange de données.
+                    </p>
+                </div>
+                <div class="tech-card">
+                    <i class="fas fa-fire"></i>
+                    <span>Firebase</span>
+                    <p style="font-size: 13px; margin-top: 10px;">Stockage cloud et notifications en temps réel.</p>
+                </div>
+                <div class="tech-card">
+                    <i class="fab fa-react"></i>
+                    <span>Expo.js</span>
+                    <p style="font-size: 13px; margin-top: 10px;">Tableau de bord pour le monitoring conducteur.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: MÉTHODOLOGIE IA -->
+    <div class="slide-container" id="slide4">
+        <h2 class="slide-title">Analyse Faciale par IA</h2>
+        <div class="content-area">
+            <div class="two-column">
+                <div>
+                    <h3>Moteurs d'IA</h3>
+                    <ul>
+                        <li><strong>MediaPipe :</strong> Calcul de l'EAR (Eye Aspect Ratio) pour détecter la fermeture
+                            des yeux.</li>
+                        <li><strong>DeepFace :</strong> Analyse CNN pour identifier les états émotionnels critiques.
+                        </li>
+                        <li><strong>Optimisation :</strong> Inférence rapide adaptée aux ressources du Raspberry Pi.
+                        </li>
+                    </ul>
+                </div>
+                <div class="image-wrapper"
+                    style="background: #1a1a1a; display: flex; align-items: center; justify-content: center; border: 2px solid #ef4444; border-radius: 12px; padding: 20px;">
+                    <img src="./Sans titre.png"
+                        style="width: 100%; object-fit: contain; border-radius: 8px;" alt="Analyse faciale MediaPipe">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: CYCLE DE FONCTIONNEMENT -->
+    <div class="slide-container" id="slide5">
+        <h2 class="slide-title">Phases du Projet</h2>
+        <div class="content-area">
+            <div class="tiled-content">
+                <div class="tile">
+                    <div class="icon"><i class="fas fa-video"></i></div>
+                    <h4>Acquisition</h4>
+                    <p>Captation via PiCamera et détection faciale.</p>
+                </div>
+                <div class="tile">
+                    <div class="icon"><i class="fas fa-brain"></i></div>
+                    <h4>Inférence</h4>
+                    <p>Analyse IA via MediaPipe et DeepFace.</p>
+                </div>
+                <div class="tile">
+                    <div class="icon"><i class="fas fa-server"></i></div>
+                    <h4>Transmission</h4>
+                    <p>API FastAPI pour l'envoi vers Firebase.</p>
+                </div>
+                <div class="tile">
+                    <div class="icon"><i class="fas fa-desktop"></i></div>
+                    <h4>Visualisation</h4>
+                    <p>Monitoring sur l'interface Next.js.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: CONCLUSION -->
+    <div class="slide-container" id="slide6" style="text-align: center; align-items: center;">
+        <!-- <h2 class="slide-title" style="border: none; padding: 0; text-align: center;">Conclusion</h2> -->
+        <div class="content-area" style="flex-direction: column; justify-content: center;">
+            <p style="font-size: 100px; color: #f1f5f9; margin-bottom: 40px;">Merci de votre attention !</p>
+            <div
+                style="background: rgba(239, 68, 68, 0.05); padding: 40px; border-radius: 20px; border: 1px solid rgba(239, 68, 68, 0.3); max-width: 600px;">
+                <p style="color: #ef4444; font-weight: 600; font-size: 24px;">Des questions ?</p>
+            </div>
+            <p style="margin-top: 40px; font-style: italic; opacity: 0.6;">Mini-Projet Somnolence & Émotions - 2024</p>
+        </div>
+    </div>
+
+</body>
+
+</html>
