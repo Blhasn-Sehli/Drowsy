@@ -1,0 +1,17 @@
+# Virtual environment (friend will create their own via setup.bat)
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+firebaseKey.json
+.env

@@ -1,0 +1,25 @@
+# =============================================
+# Drowsy F+B Backend - Python 3.11 Required
+# =============================================
+
+# --- Core Web Framework ---
+fastapi==0.115.0
+uvicorn[standard]==0.32.1
+python-multipart==0.0.20
+websockets==12.0
+pydantic==2.10.4
+
+# --- Computer Vision ---
+opencv-python==4.10.0.84
+mediapipe==0.10.21
+numpy==1.26.4
+scipy==1.13.0
+
+# --- AI / Deep Learning ---
+tensorflow==2.19.1
+tf-keras==2.19.0
+deepface==0.0.95
+protobuf==4.25.8
+
+# --- Firebase ---
+firebase-admin==6.7.0

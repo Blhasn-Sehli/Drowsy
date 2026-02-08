@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test WebSocket - Drowsiness & Emotion Alerts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.connected {
+            background: #28a745;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .status-text {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-connect {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-connect:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-disconnect {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-disconnect:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-clear {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background: #5a6268;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .alerts-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 300px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .alerts-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .alert-count {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .alert-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .alert-item.drowsiness {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .alert-item.yawning {
+            border-left-color: #ffc107;
+            background: #fffef5;
+        }
+
+        .alert-item.emotion {
+            border-left-color: #17a2b8;
+            background: #f0f7f9;
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .alert-type {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .alert-item.drowsiness .alert-type {
+            color: #dc3545;
+        }
+
+        .alert-item.yawning .alert-type {
+            color: #ffc107;
+        }
+
+        .alert-item.emotion .alert-type {
+            color: #17a2b8;
+        }
+
+        .alert-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .alert-message {
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .alert-data {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .connection-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e7f3ff;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #0056b3;
+        }
+
+        .connection-info strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Scrollbar styling */
+        .alerts-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .alerts-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .alerts-container::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .alerts-container::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🚨 Test WebSocket - Alertes Somnolence & Émotions</h1>
+        <p class="subtitle">Testeur en temps réel pour le système de notifications</p>
+
+        <div class="connection-status">
+            <div class="status-indicator" id="statusIndicator"></div>
+            <div class="status-text" id="statusText">Déconnecté</div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-connect" id="connectBtn" onclick="connect()">📡 Connecter</button>
+            <button class="btn-disconnect" id="disconnectBtn" onclick="disconnect()" disabled>🔌 Déconnecter</button>
+            <button class="btn-clear" onclick="clearAlerts()">🗑️ Effacer</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalAlerts">0</div>
+                <div class="stat-label">Total Alertes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="drowsinessCount">0</div>
+                <div class="stat-label">Somnolence</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="yawningCount">0</div>
+                <div class="stat-label">Bâillements</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="emotionCount">0</div>
+                <div class="stat-label">Émotions</div>
+            </div>
+        </div>
+
+        <div class="connection-info">
+            <strong>ℹ️ Instructions:</strong>
+            1. Assurez-vous que le backend est en cours d'exécution (python main.py)<br>
+            2. Cliquez sur "Connecter" pour établir la connexion WebSocket<br>
+            3. Les alertes apparaîtront automatiquement quand la caméra détecte la somnolence ou des bâillements
+        </div>
+
+        <div class="alerts-container">
+            <div class="alerts-title">
+                <span>📬 Alertes Reçues</span>
+                <span class="alert-count" id="alertCount">0</span>
+            </div>
+            <div id="alertsList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <div>Aucune alerte reçue</div>
+                    <div style="font-size: 12px; margin-top: 5px;">Connectez-vous pour commencer à recevoir des alertes
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let alertCount = 0;
+        let drowsinessCount = 0;
+        let yawningCount = 0;
+        let emotionCount = 0;
+        const WS_URL = 'ws://localhost:8000/ws/alerts';
+
+        function connect() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                console.log('Already connected');
+                return;
+            }
+
+            updateStatus('Connexion...', false);
+
+            try {
+                ws = new WebSocket(WS_URL);
+
+                ws.onopen = () => {
+                    console.log('✅ WebSocket connected');
+                    updateStatus('Connecté', true);
+                    document.getElementById('connectBtn').disabled = true;
+                    document.getElementById('disconnectBtn').disabled = false;
+                    addSystemMessage('✅ Connexion établie avec succès');
+                };
+
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    console.log('📨 Message received:', data);
+                    handleMessage(data);
+                };
+
+                ws.onerror = (error) => {
+                    console.error('❌ WebSocket error:', error);
+                    addSystemMessage('❌ Erreur de connexion');
+                };
+
+                ws.onclose = () => {
+                    console.log('🔌 WebSocket disconnected');
+                    updateStatus('Déconnecté', false);
+                    document.getElementById('connectBtn').disabled = false;
+                    document.getElementById('disconnectBtn').disabled = true;
+                    addSystemMessage('🔌 Connexion fermée');
+                };
+
+            } catch (error) {
+                console.error('Failed to connect:', error);
+                updateStatus('Erreur de connexion', false);
+                addSystemMessage('❌ Impossible de se connecter. Vérifiez que le backend est en cours d\'exécution.');
+            }
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+        function updateStatus(text, connected) {
+            document.getElementById('statusText').textContent = text;
+            const indicator = document.getElementById('statusIndicator');
+            if (connected) {
+                indicator.classList.add('connected');
+            } else {
+                indicator.classList.remove('connected');
+            }
+        }
+
+        function handleMessage(data) {
+            if (data.type === 'connected') {
+                addSystemMessage(`🎉 ${data.message}`);
+            } else if (data.type === 'alert') {
+                addAlert(data);
+            } else if (data.type === 'pong') {
+                console.log('Pong received');
+            }
+        }
+
+        function addAlert(data) {
+            alertCount++;
+
+            if (data.alert_type === 'drowsiness') {
+                drowsinessCount++;
+            } else if (data.alert_type === 'yawning') {
+                yawningCount++;
+            } else if (data.alert_type === 'emotion') {
+                emotionCount++;
+            }
+
+            updateStats();
+
+            const alertsList = document.getElementById('alertsList');
+
+            // Remove empty state if exists
+            const emptyState = alertsList.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert-item ${data.alert_type}`;
+
+            const time = new Date(data.timestamp).toLocaleTimeString('fr-FR');
+            
+            let icon, typeLabel, alertHTML;
+
+            if (data.alert_type === 'drowsiness') {
+                icon = '⚠️';
+                typeLabel = 'SOMNOLENCE';
+                alertHTML = `
+                    <div class="alert-header">
+                        <div class="alert-type">${icon} ${typeLabel}</div>
+                        <div class="alert-time">${time}</div>
+                    </div>
+                    <div class="alert-message">${data.message}</div>
+                    <div class="alert-data">
+                        <span>EAR: ${data.ear_avg}</span>
+                        <span>MAR: ${data.mar}</span>
+                        <span>Durée: ${data.duration}s</span>
+                    </div>
+                `;
+            } else if (data.alert_type === 'yawning') {
+                icon = '🥱';
+                typeLabel = 'BÂILLEMENT';
+                alertHTML = `
+                    <div class="alert-header">
+                        <div class="alert-type">${icon} ${typeLabel}</div>
+                        <div class="alert-time">${time}</div>
+                    </div>
+                    <div class="alert-message">${data.message}</div>
+                    <div class="alert-data">
+                        <span>EAR: ${data.ear_avg}</span>
+                        <span>MAR: ${data.mar}</span>
+                        <span>Durée: ${data.duration}s</span>
+                    </div>
+                `;
+            } else if (data.alert_type === 'emotion') {
+                icon = '😊';
+                typeLabel = 'ÉMOTION';
+                const emotionEmoji = {
+                    'happy': '😊',
+                    'sad': '😢',
+                    'neutral': '😐',
+                    'angry': '😠',
+                    'fear': '😨',
+                    'surprise': '😲',
+                    'disgust': '🤢'
+                }[data.emotion] || '😊';
+                
+                alertHTML = `
+                    <div class="alert-header">
+                        <div class="alert-type">${emotionEmoji} ${typeLabel}</div>
+                        <div class="alert-time">${time}</div>
+                    </div>
+                    <div class="alert-message">${data.message || `Émotion détectée: ${data.emotion}`}</div>
+                    <div class="alert-data">
+                        <span>Émotion: ${data.emotion}</span>
+                        <span>Confiance: ${data.confidence ? data.confidence + '%' : 'N/A'}</span>
+                    </div>
+                `;
+            }
+
+            alertDiv.innerHTML = alertHTML;
+
+            // Add to top of list
+            alertsList.insertBefore(alertDiv, alertsList.firstChild);
+
+            // Play sound (optional)
+            playAlertSound();
+        }
+
+        function addSystemMessage(message) {
+            const alertsList = document.getElementById('alertsList');
+
+            const emptyState = alertsList.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'alert-item';
+            msgDiv.style.borderLeftColor = '#6c757d';
+
+            const time = new Date().toLocaleTimeString('fr-FR');
+
+            msgDiv.innerHTML = `
+                <div class="alert-header">
+                    <div class="alert-type" style="color: #6c757d;">📡 SYSTÈME</div>
+                    <div class="alert-time">${time}</div>
+                </div>
+                <div class="alert-message">${message}</div>
+            `;
+
+            alertsList.insertBefore(msgDiv, alertsList.firstChild);
+        }
+
+        function updateStats() {
+            document.getElementById('totalAlerts').textContent = alertCount;
+            document.getElementById('drowsinessCount').textContent = drowsinessCount;
+            document.getElementById('yawningCount').textContent = yawningCount;
+            document.getElementById('emotionCount').textContent = emotionCount;
+            document.getElementById('alertCount').textContent = alertCount;
+        }
+
+        function clearAlerts() {
+            alertCount = 0;
+            drowsinessCount = 0;
+            yawningCount = 0;
+            emotionCount = 0;
+            updateStats();
+
+            const alertsList = document.getElementById('alertsList');
+            alertsList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <div>Aucune alerte reçue</div>
+                    <div style="font-size: 12px; margin-top: 5px;">Connectez-vous pour commencer à recevoir des alertes</div>
+                </div>
+            `;
+        }
+
+        function playAlertSound() {
+            // Create a simple beep sound using Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (error) {
+                console.log('Audio not supported');
+            }
+        }
+
+        // Auto-connect on page load (optional)
+        // window.onload = connect;
+
+        // Keep connection alive with ping/pong
+        setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send('ping');
+            }
+        }, 30000); // Every 30 seconds
+    </script>
+</body>
+
+</html>
